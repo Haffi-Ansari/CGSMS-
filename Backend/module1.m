@@ -1,3 +1,4 @@
+
 clear;
 clc;
 close all;
@@ -12,6 +13,7 @@ simulationDuration = 30.0;
 transitionTime = 15.0;
 
 
+
 A = [-100.0, 50.0, -100.0];
 
 B = [100.0, 0.0, 100.0];
@@ -22,6 +24,8 @@ AB = B - A;
 
 distanceAB = norm(AB);
 
+directionAB = AB / distanceAB;
+
 nominalSpeed = distanceAB / transitionTime;
 
 initialVelocity = directionAB * nominalSpeed;
@@ -30,12 +34,14 @@ Vx_initial = initialVelocity(1);
 Vy_initial = initialVelocity(2);
 Vz_initial = initialVelocity(3);
 
-time = 0:dt:simulationDuration;
-
-numSteps = length(time);
 
 
-Time = zeros(numSteps, 1);
+Time = 0:dt:simulationDuration;
+
+numSteps = length(Time);
+
+
+Vehicle_ID = zeros(numSteps, 1, "uint32");
 
 Position = zeros(numSteps, 3);
 
@@ -43,13 +49,16 @@ Velocity = zeros(numSteps, 3);
 
 Segment_Status = zeros(numSteps, 1);
 
+
 currentPosition = A;
 currentVelocity = initialVelocity;
+
+vehicleIdentifier = uint32(1);
 
 
 for k = 1:numSteps
 
-    currentTime = time(k);
+    currentTime = Time(k);
 
 
     if currentTime < transitionTime
@@ -61,23 +70,23 @@ for k = 1:numSteps
 
         currentVelocity = initialVelocity;
 
-        % Segment status.
-        currentStatus = 0;
+        currentStatus = uint8(0);
+
 
     else
-
 
         if ~exist("transitionPosition", "var")
             transitionPosition = currentPosition;
         end
 
-
-        elapsedTransitionTime = currentTime - transitionTime;
+        elapsedTransitionTime = ...
+            currentTime - transitionTime;
 
         transitionDuration = ...
             simulationDuration - transitionTime;
 
-        progress = elapsedTransitionTime / transitionDuration;
+        progress = ...
+            elapsedTransitionTime / transitionDuration;
 
         progress = max(0.0, min(1.0, progress));
 
@@ -87,12 +96,10 @@ for k = 1:numSteps
             - 15 * progress^4 ...
             + 6 * progress^5;
 
-
         blendDerivative = ...
             30 * progress^2 ...
             - 60 * progress^3 ...
             + 30 * progress^4;
-
 
         displacementToRecovery = ...
             recoveryWaypoint - transitionPosition;
@@ -107,9 +114,7 @@ for k = 1:numSteps
             blendDerivative ./ transitionDuration;
 
 
-        % Segment status.
-        currentStatus = 1;
-
+        currentStatus = uint8(1);
 
         if progress >= 1.0
 
@@ -121,8 +126,7 @@ for k = 1:numSteps
     end
 
 
-
-    Time(k) = currentTime;
+    Vehicle_ID(k) = vehicleIdentifier;
 
     Position(k, :) = currentPosition;
 
@@ -131,6 +135,7 @@ for k = 1:numSteps
     Segment_Status(k) = currentStatus;
 
 end
+
 
 
 transitionIndex = find( ...
@@ -145,7 +150,7 @@ finalPoint = Position(end, :);
 
 fprintf('\n');
 fprintf('====================================================\n');
-fprintf('MODULE 1 - KINEMATIC TRAJECTORY SIMULATION\n');
+fprintf('MODULE 1 - KINEMATIC SIMULATION\n');
 fprintf('====================================================\n');
 
 fprintf('Update frequency : %.1f Hz\n', updateFrequency);
@@ -163,9 +168,7 @@ fprintf('Vz = %.4f\n', Vz_initial);
 fprintf('Speed = %.4f units/s\n', nominalSpeed);
 
 fprintf('\nTransition Point @ t = %.2f s\n', transitionTime);
-fprintf('X = %.4f\n', transitionPoint(1));
-fprintf('Y = %.4f\n', transitionPoint(2));
-fprintf('Z = %.4f\n', transitionPoint(3));
+fprintf('[%.4f, %.4f, %.4f]\n', transitionPoint);
 
 fprintf('\nRecovery Waypoint\n');
 fprintf('[%.2f, %.2f, %.2f]\n', recoveryWaypoint);
@@ -173,7 +176,8 @@ fprintf('[%.2f, %.2f, %.2f]\n', recoveryWaypoint);
 fprintf('\nFinal Position\n');
 fprintf('[%.4f, %.4f, %.4f]\n', finalPoint);
 
-fprintf('\n====================================================\n');
+fprintf('====================================================\n');
+
 
 
 figure( ...
@@ -182,6 +186,7 @@ figure( ...
 );
 
 hold on;
+
 
 segment0 = Segment_Status == 0;
 
@@ -239,6 +244,8 @@ zlabel('Z Coordinate');
 
 title('3D Vehicle Kinematic Trajectory');
 
+
+% Legend.
 legend( ...
     'Segment 0 - Primary Route', ...
     'Segment 1 - Alternate Route', ...
@@ -249,6 +256,7 @@ legend( ...
     'best' ...
 );
 
+
 grid on;
 grid minor;
 
@@ -257,6 +265,7 @@ axis equal;
 view(3);
 
 hold off;
+
 
 velocityMagnitude = sqrt( ...
     Velocity(:,1).^2 + ...
