@@ -3,9 +3,7 @@ clc;
 close all;
 
 fprintf('\n');
-fprintf('====================================================\n');
 fprintf('LAUNCHING CGSMS ARCHITECTURE AUTOMATION CHAIN\n');
-fprintf('====================================================\n');
 fprintf('\n');
 
 
@@ -49,31 +47,25 @@ try
     fprintf('\n');
 
     fprintf('\n');
-    fprintf('====================================================\n');
     fprintf('CGSMS ARCHITECTURE AUTOMATION CHAIN: SUCCESS\n');
-    fprintf('====================================================\n');
     fprintf('Physics Core       : ONLINE\n');
     fprintf('Telemetry Packing  : ONLINE\n');
     fprintf('Network Bridge     : ONLINE\n');
     fprintf('UDP Destination    : 127.0.0.1:5005\n');
     fprintf('System Status      : ALL LAYERS FUNCTIONING\n');
     fprintf('Telemetry Status   : DATA PAYLOAD STREAM COMPLETED\n');
-    fprintf('====================================================\n');
     fprintf('\n');
 
 
 catch ME
 
     fprintf('\n');
-    fprintf('====================================================\n');
     fprintf('CGSMS ARCHITECTURE AUTOMATION CHAIN: FAILED\n');
-    fprintf('====================================================\n');
 
     fprintf('Failed Step   : [%d/3]\n', currentStep);
     fprintf('Failed Module : %s\n', currentModule);
     fprintf('Error Message : %s\n', ME.message);
 
-    fprintf('----------------------------------------------------\n');
     fprintf('Initiating backend resource cleanup...\n');
 
 
@@ -114,9 +106,7 @@ catch ME
 
     fprintf('Backend resource cleanup completed.\n');
 
-    fprintf('====================================================\n');
     fprintf('PIPELINE HALTED - CORRECT THE FAILED MODULE\n');
-    fprintf('====================================================\n');
     fprintf('\n');
 
 
